@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="textColorPlaceholder" format="color" />
+    <declare-styleable name="PlaceholderEditText">
+        <attr name="placeholder" format="string" />
+        <attr name="textColorPlaceholder" />
+        <attr name="android:textAppearance" />
+    </declare-styleable>
+    <declare-styleable name="PlaceholderEditText_TextAppearance">
+        <attr name="textColorPlaceholder" />
+    </declare-styleable>
+</resources>

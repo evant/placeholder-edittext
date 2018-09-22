@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.PlaceholderEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textAppearance">@style/TextAppearance.PlaceholderEditText</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="TextAppearance.PlaceholderEditText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:fontFamily">monospace</item>
+        <item name="textColorPlaceholder">?android:textColorHint</item>
+    </style>
+
+    <attr name="placeholderEditTextStyle" format="reference" />
+</resources>
