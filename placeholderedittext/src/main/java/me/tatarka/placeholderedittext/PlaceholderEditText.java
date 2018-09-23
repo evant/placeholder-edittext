@@ -5,13 +5,15 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.support.annotation.CallSuper;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.widget.AppCompatEditText;
-import android.text.BoringLayout;
+import android.text.DynamicLayout;
+import android.text.Editable;
 import android.text.Layout;
-import android.text.StaticLayout;
+import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -21,9 +23,7 @@ public class PlaceholderEditText extends AppCompatEditText {
     @Nullable
     private CharSequence placeholder;
     @Nullable
-    private BoringLayout.Metrics placeholderBoringMetrics;
-    @Nullable
-    private Layout placeholderLayout;
+    private DynamicLayout placeholderLayout;
     private ColorStateList placeholderTextColors;
     private int currentPlaceholderTextColor;
 
@@ -82,19 +82,10 @@ public class PlaceholderEditText extends AppCompatEditText {
     private void createPlaceholderLayout() {
         if (placeholder == null) {
             placeholderLayout = null;
-            placeholderBoringMetrics = null;
             return;
         }
-        placeholderBoringMetrics = BoringLayout.isBoring(placeholder, getPaint());
-        if (placeholderBoringMetrics != null) {
-            if (this.placeholderLayout instanceof BoringLayout) {
-                this.placeholderLayout = ((BoringLayout) this.placeholderLayout).replaceOrMake(placeholder, createPlaceholderPaint(), 0, getLayoutAlignment(), 0, 1, placeholderBoringMetrics, getIncludeFontPadding());
-            } else {
-                this.placeholderLayout = BoringLayout.make(placeholder, createPlaceholderPaint(), 0, getLayoutAlignment(), 0, 1, placeholderBoringMetrics, getIncludeFontPadding());
-            }
-        } else {
-            this.placeholderLayout = new StaticLayout(placeholder, createPlaceholderPaint(), Integer.MAX_VALUE, getLayoutAlignment(), 0, 1, getIncludeFontPadding());
-        }
+        this.placeholderLayout = new DynamicLayout(new SpannableStringBuilder(placeholder), createPlaceholderPaint(), Integer.MAX_VALUE, getLayoutAlignment(), 0, 1, getIncludeFontPadding());
+        updatePlaceholderLayout();
     }
 
     private TextPaint createPlaceholderPaint() {
@@ -159,6 +150,27 @@ public class PlaceholderEditText extends AppCompatEditText {
     }
 
     @Override
+    @CallSuper
+    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+        updatePlaceholderLayout();
+    }
+
+    private void updatePlaceholderLayout() {
+        if (placeholder != null) {
+            Editable editable = (Editable) placeholderLayout.getText();
+            CharSequence text = getText();
+            int textLength = text != null ? text.length() : 0;
+            int placeholderLength = placeholder.length();
+            int drawnPlaceholderLength = placeholderLength - textLength;
+            if (drawnPlaceholderLength <= 0) {
+                editable.clear();
+            } else {
+                editable.replace(0, editable.length(), placeholder.subSequence(placeholderLength - drawnPlaceholderLength, placeholderLength));
+            }
+        }
+    }
+
+    @Override
     @SuppressLint("RtlHardcoded")
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -170,31 +182,34 @@ public class PlaceholderEditText extends AppCompatEditText {
             if (drawnPlaceholderLength <= 0) {
                 return;
             }
+            Layout layout = getLayout();
             int voffsetText = 0;
             // translate in by our padding
             /* shortcircuit calling getVerticalOffset() */
             if ((getGravity() & Gravity.VERTICAL_GRAVITY_MASK) != Gravity.TOP) {
-                voffsetText = getVerticalOffset();
+                int layoutRange = layout.getHeight() - layout.getLineDescent(0);
+                int placeholderRange = placeholderLayout.getHeight() - placeholderLayout.getLineDescent(0);
+                voffsetText = getVerticalOffset() + (layoutRange - placeholderRange);
             }
 
             canvas.save();
             final int layoutDirection = getLayoutDirection();
             final int absoluteGravity = Gravity.getAbsoluteGravity(getGravity(), layoutDirection);
             if ((absoluteGravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.LEFT) {
-                float textWidth = getLayout().getLineWidth(0);
-                canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop() + voffsetText);
-                canvas.clipRect(textWidth, 0, getWidth(), getHeight());
+                float textWidth = layout.getLineWidth(0);
+                canvas.translate(getCompoundPaddingLeft() + textWidth, getExtendedPaddingTop() + voffsetText);
+//                canvas.clipRect(textWidth, 0, getWidth(), getHeight());
                 placeholderLayout.draw(canvas);
             } else if ((absoluteGravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.CENTER_HORIZONTAL) {
-                float textWidth = getLayout().getLineWidth(0);
-                canvas.translate((getWidth() - textWidth) / 2, getExtendedPaddingTop() + voffsetText);
-                canvas.clipRect(textWidth, 0, getWidth(), getHeight());
+                float textWidth = layout.getLineWidth(0);
+                canvas.translate(textWidth + (getWidth() - textWidth) / 2, getExtendedPaddingTop() + voffsetText);
+//                canvas.clipRect(textWidth, 0, getWidth(), getHeight());
                 placeholderLayout.draw(canvas);
             } else {
-                float textWidth = getLayout().getLineWidth(0);
+                float textWidth = layout.getLineWidth(0);
                 float placeholderWidth = placeholderWidth();
                 canvas.translate(getWidth() - placeholderWidth - getCompoundPaddingLeft(), getExtendedPaddingTop() + voffsetText);
-                canvas.clipRect(0, 0, placeholderWidth - textWidth, getHeight());
+//                canvas.clipRect(0, 0, placeholderWidth - textWidth, getHeight());
                 placeholderLayout.draw(canvas);
             }
             canvas.restore();
@@ -247,9 +262,6 @@ public class PlaceholderEditText extends AppCompatEditText {
     private int placeholderWidth() {
         if (placeholderLayout == null) {
             return 0;
-        }
-        if (placeholderBoringMetrics != null) {
-            return placeholderBoringMetrics.width;
         }
         return (int) placeholderLayout.getLineWidth(0);
     }

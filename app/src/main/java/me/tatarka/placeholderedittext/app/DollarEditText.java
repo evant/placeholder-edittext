@@ -25,7 +25,7 @@ public class DollarEditText extends PlaceholderEditText implements InputFilter {
     public DollarEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
         setFilters(new InputFilter[]{this});
-        updateText(getText());
+        updateText(getText(), true);
     }
 
     @Override
@@ -33,21 +33,26 @@ public class DollarEditText extends PlaceholderEditText implements InputFilter {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         if (inTextChange) return;
         inTextChange = true;
-        updateText((Editable) text);
+        updateText((Editable) text, lengthAfter > lengthBefore);
         inTextChange = false;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.save();
         canvas.drawText("$", 0, getLayout().getLineBottom(0), getPaint());
     }
 
-    private void updateText(Editable s) {
+    private void updateText(Editable s, boolean forward) {
         int periodIndex = TextUtils.indexOf(s, '.');
         int end = periodIndex >= 0 ? periodIndex : s.length();
+        if (!forward && s.length() == 1 && s.charAt(0) == '0') {
+            s.delete(0, 1);
+        }
         if (s.length() > 0) {
+            if (periodIndex == 0) {
+                s.insert(0, "0");
+            }
             if (end > 0) {
                 NumberFormat numberFormat = DecimalFormat.getNumberInstance();
                 try {
@@ -85,16 +90,6 @@ public class DollarEditText extends PlaceholderEditText implements InputFilter {
 
     @Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-        // Remove zeros from the start
-        int firstNonZeroIndex = 0;
-        if (dstart == 0 && source.length() > 0) {
-            while (firstNonZeroIndex < source.length()) {
-                if (source.charAt(firstNonZeroIndex) != '0') {
-                    break;
-                }
-                firstNonZeroIndex++;
-            }
-        }
         // Only allow 2 digits after the decimal
         SpannableStringBuilder b = new SpannableStringBuilder(dest);
         b.replace(dstart, dend, source.subSequence(start, end));
@@ -105,6 +100,6 @@ public class DollarEditText extends PlaceholderEditText implements InputFilter {
         if (periodIndex >= 0 && TextUtils.indexOf(b, '.', periodIndex + 1) >= 0) {
             return "";
         }
-        return firstNonZeroIndex > 0 ? source.subSequence(firstNonZeroIndex, source.length()) : null;
+        return null;
     }
 }

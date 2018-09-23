@@ -7,7 +7,6 @@
     </style>
 
     <style name="TextAppearance.PlaceholderEditText" parent="TextAppearance.AppCompat.Medium">
-        <item name="android:fontFamily">monospace</item>
         <item name="textColorPlaceholder">?android:textColorHint</item>
     </style>
 
