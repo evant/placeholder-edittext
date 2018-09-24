@@ -25,18 +25,18 @@
     <me.tatarka.placeholderedittext.app.DollarEditText
         android:id="@+id/dollarEditText"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:background="@null"
         android:digits="0123456789,."
+        android:gravity="bottom"
         android:inputType="numberDecimal"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
+        android:paddingLeft="28dp"
+        android:paddingRight="28dp"
         android:textDirection="locale"
         android:textSize="@dimen/text_size_large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dateEditText"
-        app:placeholder="0.00" />
+        app:layout_constraintTop_toBottomOf="@+id/dateEditText" />
 
     <me.tatarka.placeholderedittext.app.SsnEditText
         android:id="@+id/ssnEditText"
@@ -51,4 +51,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dollarEditText" />
+
+    <me.tatarka.placeholderedittext.PlaceholderEditText
+        android:id="@+id/placeholderEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Hint is shown instead when empty"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssnEditText"
+        app:placeholder="Placeholder Text" />
 </android.support.constraint.ConstraintLayout>

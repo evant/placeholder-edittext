@@ -3,7 +3,6 @@
 
     <style name="Widget.PlaceholderEditText" parent="Widget.AppCompat.EditText">
         <item name="android:textAppearance">@style/TextAppearance.PlaceholderEditText</item>
-        <item name="android:maxLines">1</item>
     </style>
 
     <style name="TextAppearance.PlaceholderEditText" parent="TextAppearance.AppCompat.Medium">

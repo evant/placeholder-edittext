@@ -40,7 +40,7 @@ public class DollarEditText extends PlaceholderEditText implements InputFilter {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawText("$", 0, getLayout().getLineBottom(0), getPaint());
+        canvas.drawText("$", 0, getLayout().getLineBottom(0) - getLayout().getLineTop(0), getPaint());
     }
 
     private void updateText(Editable s, boolean forward) {
